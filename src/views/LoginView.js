@@ -56,7 +56,7 @@ function LoginView({ navigation }) {
             await storeData('isLogin', JSON.stringify(true))
             await storeData('refreshToken', authState.refreshToken)
             console.log('Login res==>', JSON.stringify(authState))
-            navigation.replace('Home')
+            navigation.replace('Home', { initialRoute: 'CSV' })
         } catch (error) {
             setLogin(false)
             console.log(error);

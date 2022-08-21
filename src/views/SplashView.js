@@ -15,7 +15,7 @@ const SplashView = ({ navigation }) => {
             }
             else if (login === 'true') {
                 console.log('home')
-                navigation.replace('Home');
+                navigation.replace('Home', { initialRoute: 'CSV' });
             } else { console.log('Login'); navigation.replace('Landing'); }
 
         } catch (e) {

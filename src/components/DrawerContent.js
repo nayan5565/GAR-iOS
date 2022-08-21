@@ -61,9 +61,21 @@ function DrawerContent({ props, navigation }) {
                                     size={isTablet ? 48 : 24} />)}
                             labelStyle={{ fontSize: isTablet ? 32 : 14 }}
                             label='Parcel List'
-                            onPress={() => { setSelectedItem(1), navigation.navigate('Parcel') }}
+                            onPress={() => { setSelectedItem(1), navigation.navigate('Parcel', { isBack: false, addressItem: null, csvIndex: 0 }) }}
                         />
-
+                        <DrawerItem
+                            focused={selectedItem === 2}
+                            activeTintColor='teal'
+                            activeBackgroundColor='white'
+                            icon={({ color, size }) => (
+                                <Icon
+                                    name='transfer'
+                                    color={color}
+                                    size={isTablet ? 48 : 24} />)}
+                            labelStyle={{ fontSize: isTablet ? 32 : 14 }}
+                            label='Uploaded List'
+                            onPress={() => { setSelectedItem(2), navigation.navigate('Uploaded') }}
+                        />
                     </Drawer.Section>
 
                 </View>

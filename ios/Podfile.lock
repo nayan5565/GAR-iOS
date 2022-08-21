@@ -280,9 +280,19 @@ PODS:
   - react-native-app-auth (6.4.3):
     - AppAuth (= 1.4.0)
     - React-Core
+  - react-native-camera (4.2.1):
+    - React-Core
+    - react-native-camera/RCT (= 4.2.1)
+    - react-native-camera/RN (= 4.2.1)
+  - react-native-camera/RCT (4.2.1):
+    - React-Core
+  - react-native-camera/RN (4.2.1):
+    - React-Core
   - react-native-document-picker (8.1.1):
     - React-Core
   - react-native-image-picker (4.8.4):
+    - React-Core
+  - react-native-image-resizer (1.4.5):
     - React-Core
   - react-native-netinfo (9.3.0):
     - React-Core
@@ -369,6 +379,15 @@ PODS:
     - React-Core
   - RNGestureHandler (2.5.0):
     - React-Core
+  - RNImageCropPicker (0.38.0):
+    - React-Core
+    - React-RCTImage
+    - RNImageCropPicker/QBImagePickerController (= 0.38.0)
+    - TOCropViewController
+  - RNImageCropPicker/QBImagePickerController (0.38.0):
+    - React-Core
+    - React-RCTImage
+    - TOCropViewController
   - RNReanimated (2.9.1):
     - DoubleConversion
     - FBLazyVector
@@ -401,6 +420,7 @@ PODS:
     - React-RCTImage
   - RNVectorIcons (9.2.0):
     - React-Core
+  - TOCropViewController (2.6.1)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -449,8 +469,10 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - react-native-app-auth (from `../node_modules/react-native-app-auth`)
+  - react-native-camera (from `../node_modules/react-native-camera`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-sqlite-storage (from `../node_modules/react-native-sqlite-storage`)
@@ -471,6 +493,7 @@ DEPENDENCIES:
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
@@ -492,6 +515,7 @@ SPEC REPOS:
     - fmt
     - libevent
     - OpenSSL-Universal
+    - TOCropViewController
     - YogaKit
 
 EXTERNAL SOURCES:
@@ -531,10 +555,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   react-native-app-auth:
     :path: "../node_modules/react-native-app-auth"
+  react-native-camera:
+    :path: "../node_modules/react-native-camera"
   react-native-document-picker:
     :path: "../node_modules/react-native-document-picker"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-image-resizer:
+    :path: "../node_modules/react-native-image-resizer"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-safe-area-context:
@@ -575,6 +603,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNImageCropPicker:
+    :path: "../node_modules/react-native-image-crop-picker"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -617,8 +647,10 @@ SPEC CHECKSUMS:
   React-jsinspector: f4775ea9118cbe1f72b834f0f842baa7a99508d8
   React-logger: a1f028f6d8639a3f364ef80419e5e862e1115250
   react-native-app-auth: fd1eaa667c0bc014199456d14a6440cb74de814e
+  react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
   react-native-document-picker: f68191637788994baed5f57d12994aa32cf8bf88
   react-native-image-picker: cffb727cf2f59bd5c0408e30b3dbe0b935f88835
+  react-native-image-resizer: d9fb629a867335bdc13230ac2a58702bb8c8828f
   react-native-netinfo: 129bd99f607a2dc5bb096168f3e5c150fd1f1c95
   react-native-safe-area-context: 6c12e3859b6f27b25de4fee8201cfb858432d8de
   react-native-sqlite-storage: f6d515e1c446d1e6d026aa5352908a25d4de3261
@@ -639,9 +671,11 @@ SPEC CHECKSUMS:
   RNDeviceInfo: 0a7c1d2532aa7691f9b9925a27e43af006db4dae
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: bad495418bcbd3ab47017a38d93d290ebd406f50
+  RNImageCropPicker: ffbba608264885c241cbf3a8f78eb7aeeb978241
   RNReanimated: b5b17149593e7c05e4ec5c0efea1f21e05829510
   RNScreens: 4a1af06327774490d97342c00aee0c2bafb497b7
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
+  TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   Yoga: d6b6a80659aa3e91aaba01d0012e7edcbedcbecd
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 

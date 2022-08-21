@@ -5,6 +5,7 @@ import RNFetchBlob from "rn-fetch-blob";
 import { refresh } from 'react-native-app-auth';
 import { CLIENT_ID, MOBILE_REDIRECT_URL3 } from "./one_drive_credential";
 import { exp } from "react-native-reanimated";
+import ImageResizer from 'react-native-image-resizer';
 
 const showError = (msg) => {
     showMessage({
@@ -129,6 +130,38 @@ export const getUnique = (arr, index) => {
         .filter(e => arr[e]).map(e => arr[e]);
 
     return unique;
+}
+
+export function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+export const imageResize = (path) => {
+    var result;
+    ImageResizer.createResizedImage(path, 1024, 1024, 'PNG', 100, 0, undefined, false,)
+        .then(response => {
+            // response.uri is the URI of the new image that can now be displayed, uploaded...
+            // response.path is the path of the new image
+            // response.name is the name of the new image with the extension
+            // response.size is the size of the new image
+            console.log('imageResize==>', formatBytes(response.size))
+            return response;
+        })
+        .catch(err => {
+            console.log('imageResize err==>', JSON.stringify(err))
+            // Oops, something went wrong. Check that the filename is correct and
+            // inspect err to get more details.
+            result = err;
+        });
+
 }
 
 export const ConvertToCSV = objArray => {

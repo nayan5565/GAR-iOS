@@ -5,10 +5,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { HorizontalGap, ImageView, ItemDivider, Loader, VerticalGap } from '../constants/CustomWidget';
 import RNFetchBlob from 'rn-fetch-blob';
 import { checkConnected, ConvertToCSV, createFolderApi, getData, getUnique, storeData, tokenRefresh } from '../constants/helperFunction';
-import { getImageData, getImageLength, pickMultipleFile, getAllImage, updateImage } from '../redux/actions/dbAction';
+import { getImageData, getImageLength, pickMultipleFile, getAllImage, updateImage, openCamera } from '../redux/actions/dbAction';
 import deviceInfoModule from 'react-native-device-info';
 import { ConfirmationAlert } from '../components/ConfirmationAlert';
-import { ScreenWidth } from '@rneui/base';
 
 const screen = Dimensions.get('window')
 var totalPendingImage = 0;
@@ -17,25 +16,28 @@ const isPortrait = () => {
     return dim.height >= dim.width;
 };
 
-function ParcelListView({ navigation }) {
+function ParcelListView({ route, navigation }) {
     const dispatch = useDispatch()
     const fetchImageList = (itemData, index) => dispatch(pickMultipleFile(itemData, index))
+    const captureImageList = (itemData, index) => dispatch(openCamera(itemData, index))
     const getImages = () => dispatch(getAllImage())
     const updateUploadedImage = (item, index, number, uploadStatus) => dispatch(updateImage(item, index, number, uploadStatus))
     // const { csvDataList, status, selectAddress } = useSelector((state) => state.csvData)
     const { csvDataList, status, selectAddress, imageList } = useSelector((state) => state.localDB)
     const [uploading, setUploading] = useState(false);
     const [allUpdated, setAllUploaded] = useState(false);
-    const [isTakeImageView, setIsTakeImageView] = useState(false);
+    const [isTakeImageView, setIsTakeImageView] = useState(route.params.isBack);
     const [fileUploadNumber, setFileUploadNumber] = useState(1);
-    const [selectedItem, setSelectedItem] = useState();
-    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [selectedAddress, setSelectedAddress] = useState(route.params.addressItem);
+    const [selectedIndex, setSelectedIndex] = useState(route.params.csvIndex);
     const [csvUploading, setCsvUploading] = useState(false);
     const [orientation, setOrientation] = useState(isPortrait() ? 'PORTRAIT' : 'LANDSCAPE',);
     const [isTablet, setTable] = useState(deviceInfoModule.isTablet());
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertMSG, setAlertMSG] = useState('');
     // const [totalPendingImage, setTotalPendingImage] = useState(0);
+
+    console.log('Parcel route===>', route.params.isBack)
 
     useEffect(() => {
         const callback = () => setOrientation(isPortrait() ? 'PORTRAIT' : 'LANDSCAPE');
@@ -215,7 +217,8 @@ function ParcelListView({ navigation }) {
             const imagesByAddress = imageList.filter(e => e.address === ads.address && e.status === 'pending');
             // console.log('imagesByAddress==>', imagesByAddress.length)
             if (imagesByAddress.length > 0) {
-                const uploadedImages = imageList.filter(e => e.address === ads.address && e.status === 'uploaded');
+                //e.status == deleted and uploaded is both uploaded to onedrive
+                const uploadedImages = imageList.filter(e => e.address === ads.address && e.status !== 'pending');
                 if (uploadedImages.length > 0) {
                     numberByAddress = uploadedImages[uploadedImages.length - 1].imageNumber
                     numberByAddress = numberByAddress + 1
@@ -415,7 +418,7 @@ function ParcelListView({ navigation }) {
                     <TouchableOpacity
                         style={{ paddingHorizontal: isTablet ? 8 : 4, paddingVertical: isTablet ? 8 : 4, borderRadius: isTablet ? 8 : 4, borderColor: 'grey', borderWidth: isTablet ? 2 : 1 }}
                         // onPress={() => { fetchImageList(item, index) }} >
-                        onPress={() => { setIsTakeImageView(true), setSelectedItem(item), setSelectedIndex(index) }} >
+                        onPress={() => { setIsTakeImageView(true), setSelectedAddress(item), setSelectedIndex(index) }} >
                         <Text style={{ color: 'grey', alignSelf: 'center', textTransform: 'capitalize', fontSize: isTablet ? 20 : 10 }}>Take New Photo</Text>
 
                     </TouchableOpacity>
@@ -540,11 +543,20 @@ function ParcelListView({ navigation }) {
         )
     }
 
-    const TakeImageView = (item, index) => {
+    const TakeImageView = (addressItem, index) => {
         const dim = Dimensions.get('screen');
+        // getCaptureImages(addressItem)
         var imagesByAddress = []
-        if (imageList.length > 0)
-            imagesByAddress = imageList.filter(e => e.address === item.address);
+        var captureImages = imageList.filter(e => e.address === addressItem.address && e.status === 'pending' && e.tag === 'camera')
+        if (imageList.length > 0) {
+            // for (const res of imageList.filter(e => e.address === addressItem.address && e.status === 'pending' && e.tag === 'camera')) {
+            //     captureImages.push(res.imageUrl)
+            // }
+
+            imagesByAddress = imageList.filter(e => e.address === addressItem.address);
+            // imagesByAddress = imageList.filter(e => e.address === addressItem.address && e.status !== 'deleted');
+            // console.log('captureImages==>', imagesByAddress[0])
+        }
         return (
             <View style={{ flexDirection: orientation === 'PORTRAIT' ? 'column' : 'row', alignItems: orientation === 'PORTRAIT' ? 'center' : 'flex-start', paddingHorizontal: isTablet ? 24 : 12 }}>
                 <View style={{ flexDirection: orientation === 'PORTRAIT' ? 'row' : 'column', alignItems: 'flex-start', width: orientation === 'PORTRAIT' ? dim.width : null, justifyContent: orientation === 'PORTRAIT' ? 'space-between' : 'flex-start' }} >
@@ -555,10 +567,18 @@ function ParcelListView({ navigation }) {
                         <Text style={{ color: 'grey', alignSelf: 'center', textTransform: 'capitalize', fontSize: isTablet ? 24 : 12 }}>Return To Parcel List</Text>
 
                     </TouchableOpacity>
+
                     <TouchableOpacity
-                        style={{ marginTop: orientation === 'PORTRAIT' ? 0 : 16, paddingHorizontal: isTablet ? 24 : 12, paddingVertical: isTablet ? 16 : 8, marginRight: isTablet ? 48 : 24, borderRadius: isTablet ? 8 : 4, borderColor: 'green', backgroundColor: 'green', borderWidth: isTablet ? 2 : 1 }}
-                        onPress={() => { fetchImageList(item, index) }} >
-                        <Text style={{ color: 'white', alignSelf: 'center', textTransform: 'capitalize', fontSize: isTablet ? 24 : 12 }}>Take Photo</Text>
+                        style={{ marginTop: orientation === 'PORTRAIT' ? 0 : 16, marginLeft: orientation === 'PORTRAIT' ? 8 : 0, paddingHorizontal: isTablet ? 24 : 6, paddingVertical: isTablet ? 16 : 8, marginRight: isTablet ? 48 : 8, borderRadius: isTablet ? 8 : 4, borderColor: 'green', backgroundColor: 'green', borderWidth: isTablet ? 2 : 1 }}
+                        onPress={() => { fetchImageList(addressItem, index) }} >
+                        <Text style={{ color: 'white', alignSelf: 'center', textTransform: 'capitalize', fontSize: isTablet ? 24 : 12 }}>Upload Photo</Text>
+
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={{ marginTop: orientation === 'PORTRAIT' ? 0 : 16, paddingHorizontal: isTablet ? 24 : 6, paddingVertical: isTablet ? 16 : 8, marginRight: isTablet ? 48 : 24, borderRadius: isTablet ? 8 : 4, borderColor: 'green', backgroundColor: 'green', borderWidth: isTablet ? 2 : 1 }}
+                        // onPress={() => { fetchImageList(item, index) }} >
+                        onPress={() => { captureImages.length > 0 ? navigation.replace('Gallery', { imageList: captureImages, address: selectedAddress, csvIndex: index }) : navigation.replace('Camera2', { imageList: [], address: selectedAddress, csvIndex: index }) }} >
+                        <Text style={{ color: 'white', alignSelf: 'center', textTransform: 'capitalize', fontSize: isTablet ? 24 : 12 }}>Take Photo({captureImages.length})</Text>
 
                     </TouchableOpacity>
                 </View>
@@ -566,11 +586,11 @@ function ParcelListView({ navigation }) {
                 {HorizontalGap(16)}
                 {/* <Text>ID: {item.id}</Text> */}
                 <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Address: {item.address}</Text>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Property Class: {item.propertyClass}</Text>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Building Class: {item.buildStyle}</Text>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>SFLA: {item.SFLA}</Text>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Lat, Long: {item.LAT}, {item.LONG}</Text>
+                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Address: {addressItem.address}</Text>
+                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Property Class: {addressItem.propertyClass}</Text>
+                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Building Class: {addressItem.buildStyle}</Text>
+                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>SFLA: {addressItem.SFLA}</Text>
+                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Lat, Long: {addressItem.LAT}, {addressItem.LONG}</Text>
                     {VerticalGap(8)}
                     {/* {BuildImageView(imagesByAddress)} */}
                     {orientation === 'PORTRAIT' ? BuildImageView(imagesByAddress) : isTablet ? BuildImageView(imagesByAddress) : null}
@@ -629,7 +649,7 @@ function ParcelListView({ navigation }) {
 
     return (
         <View style={GlobalStyle.container}>
-            {isTakeImageView ? TakeImageView(selectedItem, selectedIndex) : ParcelView()}
+            {isTakeImageView ? TakeImageView(selectedAddress, selectedIndex) : ParcelView()}
         </View>
     );
 }

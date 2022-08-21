@@ -12,19 +12,19 @@ export const ConfirmationAlert = (props) => {
         },
         title: {
             color: (props.android && props.android.title && props.android.title.color) || '#000000',
-            fontFamily: (props.android && props.android.title && props.android.title.fontFamily) || 'initial',
-            fontSize: (props.android && props.android.title && props.android.title.fontSize) || isTablet ? 40 : 20,
+            // fontFamily: (props.android && props.android.title && props.android.title.fontFamily) || 'initial',
+            fontSize: (props.android && props.android.title && props.android.title.fontSize) || isTablet ? 40 : 16,
             fontWeight: (props.android && props.android.title && props.android.title.fontWeight) || 'bold',
         },
         message: {
             color: (props.android && props.android.message && props.android.message.color) || 'grey',
-            fontFamily: (props.android && props.android.message && props.android.message.fontFamily) || 'initial',
+            // fontFamily: (props.android && props.android.message && props.android.message.fontFamily) || 'initial',
             fontSize: (props.android && props.android.message && props.android.message.fontSize) || isTablet ? 28 : 16,
             fontWeight: (props.android && props.android.message && props.android.message.fontWeight) || 'normal',
         },
         button: {
             color: '#387ef5',
-            fontFamily: 'initial',
+            // fontFamily: 'initial',
             fontSize: isTablet ? 30 : 16,
             fontWeight: '500',
             textTransform: 'uppercase',
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
         borderRadius: isTablet ? 4 : 2,
     },
     androidTitle: {
-        margin: isTablet ? 24 : 12,
+        margin: isTablet ? 24 : 10,
     },
     androidMessage: {
         marginLeft: isTablet ? 32 : 24,

@@ -420,25 +420,28 @@ function CsvDownloadView({ navigation }) {
                 //     },
                 // }}
 
-                buttons={[{
-                    // text: 'no',
-                    func: () => { console.log('No Pressed') },
-                }, {
-                    // text: 'Yes',
-                    func: () => {
-                        console.log('Yes Pressed')
-                        var fileExtension = csvFileName.substring(csvFileName.lastIndexOf('.') + 1)
-
-                        if (csvFileName.length < 1 || fileExtension.trim().toLowerCase() != 'csv') {
-                            setCsvModalMsg("File format must be CSV, please enter full file name including '.csv' extension.")
-                            setCsvModalVisible(true)
-
-                        } else {
-                            checkPermission()
-                        }
+                buttons={[
+                    {
+                        // text: 'no',
+                        func: () => { console.log('No Pressed') },
                     },
+                    {
+                        // text: 'Yes',
+                        func: () => {
+                            console.log('Yes Pressed')
+                            var fileExtension = csvFileName.substring(csvFileName.lastIndexOf('.') + 1)
 
-                }]}
+                            if (csvFileName.length < 1 || fileExtension.trim().toLowerCase() != 'csv') {
+                                setCsvModalMsg("File format must be CSV, please enter full file name including '.csv' extension.")
+                                setCsvModalVisible(true)
+
+                            } else {
+                                checkPermission()
+                            }
+                        },
+
+                    },
+                ]}
             />
         )
     }
