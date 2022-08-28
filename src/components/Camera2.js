@@ -114,7 +114,7 @@ function Camera2({ route, navigation }) {
         var imageName = data.uri.substring(data.uri.lastIndexOf('/') + 1)
         var maxSize = 3983900;
         // var maxSize = 1983900;
-        console.log('uri',data.uri);
+        console.log('uri', data.uri);
         const filePath = data.uri.split('///').pop()  // removes leading file:///
         RNFetchBlob.fs.stat(filePath)
             .then((stats) => {
@@ -267,10 +267,10 @@ function Camera2({ route, navigation }) {
                     return (
                         <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center' }}>
                             <TouchableOpacity onPress={() => takePicture(camera)} style={styles.capture}>
-                                <Text style={{ fontSize: isTablet ? 28 : 14 }}> Capture({captureCurrentImageList.length}) </Text>
+                                <Text style={GlobalStyle.textStyle}> Capture({captureCurrentImageList.length}) </Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => captureCurrentImageList.length < 1 ? setAlertVisible(true) : navigation.replace('Gallery', { imageList: captureCurrentImageList, address: address, csvIndex: csvIndex })} style={styles.capture}>
-                                <Text style={{ fontSize: isTablet ? 28 : 14 }}> Done </Text>
+                                <Text style={GlobalStyle.textStyle}> Done </Text>
                             </TouchableOpacity>
                         </View>
                     );

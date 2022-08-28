@@ -34,12 +34,16 @@ export default StyleSheet.create({
         justifyContent: 'center',
         marginTop: isTablet ? 48 : 32
     },
+    tableText: { textTransform: 'uppercase', color: 'black', alignSelf: 'center', fontSize: isTablet ? 24 : 10 },
 
+    tableTextValue: { textTransform: 'uppercase', color: 'grey', alignSelf: 'center', fontSize: isTablet ? 24 : 10 },
+
+    textStyle: { color: 'grey', fontSize: isTablet ? 28 : 14 },
 
     textInput: {
         width: screen.width * 0.6,
         marginTop: Platform.OS === 'ios' ? 0 : -12,
-
+        color: 'black',
         backgroundColor: "white",
         borderRadius: 8,
         borderWidth: 1,

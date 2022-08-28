@@ -32,6 +32,7 @@ function Gallery({ route, navigation }) {
     const [alertDeleteVisible, setAlertDeleteVisible] = useState(false);
     const [alertMSG, setAlertMSG] = useState('');
     const [alertTitle, setAlertTitle] = useState('Alert');
+    const [percentage, setPercantage] = useState('0%');
     const { address, csvIndex } = route.params;
     console.log('Address===>', address.address)
 
@@ -187,21 +188,26 @@ function Gallery({ route, navigation }) {
                     },
                     RNFetchBlob.wrap(decodeURIComponent(path))
                     // listen to upload progress event
-                ).uploadProgress((written, total) => {
+                ).uploadProgress({ interval: 0 }, (written, total) => {
                     console.log('uploaded size===>', formatBytes(written))
-                    console.log('uploaded', written / total)
+
+                    var round = Math.round(written / total * 100)
+                    var percentage = round + '%'
+                    setPercantage(percentage)
+                    console.log('uploaded==>', percentage)
                 })
                     // listen to download progress event
                     .progress((received, total) => {
                         console.log('progress', received / total)
-                    }).catch(e=>{
-                      console.log('error', e);
-                  });
+                    }).catch(e => {
+                        console.log('error', e);
+                    });
                 console.log('response.status==>', response.respInfo.status)
                 console.log('response===>', JSON.stringify(response))
                 extractImageIndex = imageList.findIndex(e => e.id === res.id);
                 var uploadStatus = 'pending';
                 if (response.respInfo.status === 200 || response.respInfo.status === 201) {
+                    setPercantage('0%')
                     uploadStatus = 'uploaded'
                 } else {
 
@@ -369,7 +375,7 @@ function Gallery({ route, navigation }) {
 
         return (
 
-            <Text style={{ color: 'white', fontSize: isTablet ? 28 : 14 }}>Image uploading {fileUploadNumber}/{captureCurrentImageList.length} </Text>
+            <Text style={{ color: 'white', fontSize: isTablet ? 28 : 14 }}>Uploading {fileUploadNumber}({percentage})/{captureCurrentImageList.length} </Text>
 
         )
     }

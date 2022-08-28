@@ -292,6 +292,112 @@ export const getImageLength = (address) => {
 
 }
 
+export const pickMultipleFileSave = (res, addressItemData, index) => {
+    createTable()
+
+    return async dispatch => {
+        console.log(
+            'PickImage add===>', res.fileCopyUri
+        );
+        await db.transaction(async (tx) => {
+
+            await tx.executeSql("INSERT INTO ImageList (imageUrl, imageName, imageType, address, imageNumber, status,tag ) VALUES (?,?,?,?,?,?,?)",
+                [res.fileCopyUri, res.imageName, res.imageType, addressItemData.address, 0, 'pending', 'gallery'],
+                (tx, results) => {
+
+                    console.log('Save DB')
+                    //fetch images of address
+                    var imagesAddress = [];
+                    db.transaction((tx) => {
+                        console.log('db address2===>', addressItemData.address)
+                        tx.executeSql('SELECT * FROM ImageList WHERE address = ?', [addressItemData.address],
+
+                            (tx, results) => {
+                                var len = results.rows.length;
+                                // console.log("len: " + JSON.stringify(results.rows.item(0)))
+
+                                if (len > 0) {
+
+                                    for (var i = 0; i < len; i++) {
+                                        var item = results.rows.item(i);
+                                        imagesAddress.push({ id: item.id, imageUrl: item.imageUrl, imageName: item.imageName, imageType: item.imageType, address: item.address, imageNumber: item.imageNumber, status: item.status, tag: item.tag })
+                                    }
+
+                                }
+
+                            },
+                            error => {
+                                dispatch({
+                                    type: SAVE_IMAGE_DB,
+                                    status: 'error'
+                                });
+                                console.log('getting error: ' + error.message)
+                            }
+                        );
+
+                    })
+                    //fetch all images
+                    db.transaction((tx) => {
+
+                        tx.executeSql('SELECT * FROM ImageList', [],
+
+                            (tx, results) => {
+                                var len = results.rows.length;
+                                // console.log("len: " + JSON.stringify(results.rows.item(0)))
+                                var images = [];
+                                if (len > 0) {
+
+                                    for (var i = 0; i < len; i++) {
+                                        var item = results.rows.item(i);
+                                        images.push({ id: item.id, imageUrl: item.imageUrl, imageName: item.imageName, imageType: item.imageType, address: item.address, imageNumber: item.imageNumber, status: item.status, tag: item.tag })
+                                    }
+
+                                }
+                                console.log('db all Image===>', images.length)
+
+                                console.log('db Image===>', imagesAddress.length)
+                                var item2 = {
+                                    ...addressItemData,
+                                    process: imagesAddress.length,
+                                    status: 'No'
+                                }
+                                dispatch({
+                                    type: SAVE_IMAGE_DB,
+                                    payload: images,
+                                    selectAddress: item2.address,
+                                    item: item2,
+                                    index: index,
+                                    imageStatus: 'success'
+                                });
+                            },
+                            error => {
+                                dispatch({
+                                    type: SAVE_IMAGE_DB,
+                                    status: 'error'
+                                });
+                                console.log('getting error: ' + error.message)
+                            }
+                        );
+
+                    })
+                },
+                error => {
+                    dispatch({
+                        type: SAVE_IMAGE_DB,
+                        imageStatus: 'error'
+                    }), console.log('getting error: ' + error.message); console.log('Save error: ' + error.message)
+                }
+            );
+
+        })
+
+
+
+
+    }
+
+}
+
 export const pickMultipleFile = (addressItemData, index) => {
     createTable()
     try {

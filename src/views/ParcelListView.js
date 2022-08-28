@@ -5,9 +5,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { HorizontalGap, ImageView, ItemDivider, Loader, VerticalGap } from '../constants/CustomWidget';
 import RNFetchBlob from 'rn-fetch-blob';
 import { checkConnected, ConvertToCSV, createFolderApi, getData, getUnique, storeData, tokenRefresh } from '../constants/helperFunction';
-import { getImageData, getImageLength, pickMultipleFile, getAllImage, updateImage, openCamera } from '../redux/actions/dbAction';
+import { getImageData, getImageLength, pickMultipleFileSave, getAllImage, updateImage, openCamera } from '../redux/actions/dbAction';
 import deviceInfoModule from 'react-native-device-info';
 import { ConfirmationAlert } from '../components/ConfirmationAlert';
+import DocumentPicker from 'react-native-document-picker';
+import ImageResizer from 'react-native-image-resizer';
 
 const screen = Dimensions.get('window')
 var totalPendingImage = 0;
@@ -18,7 +20,7 @@ const isPortrait = () => {
 
 function ParcelListView({ route, navigation }) {
     const dispatch = useDispatch()
-    const fetchImageList = (itemData, index) => dispatch(pickMultipleFile(itemData, index))
+    const fetchImageList = (res, itemData, index) => dispatch(pickMultipleFileSave(res, itemData, index))
     const captureImageList = (itemData, index) => dispatch(openCamera(itemData, index))
     const getImages = () => dispatch(getAllImage())
     const updateUploadedImage = (item, index, number, uploadStatus) => dispatch(updateImage(item, index, number, uploadStatus))
@@ -35,6 +37,7 @@ function ParcelListView({ route, navigation }) {
     const [isTablet, setTable] = useState(deviceInfoModule.isTablet());
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertMSG, setAlertMSG] = useState('');
+    const [percentage, setPercantage] = useState('0%');
     // const [totalPendingImage, setTotalPendingImage] = useState(0);
 
     console.log('Parcel route===>', route.params.isBack)
@@ -50,54 +53,92 @@ function ParcelListView({ route, navigation }) {
         };
     }, []);
 
-    // const pickMultipleFile = async (pickAddress) => {
-    //     setAddress(pickAddress)
-    //     // setShowImage(true)
-    //     try {
-    //         const results = await DocumentPicker.pickMultiple({
-    //             type: [DocumentPicker.types.images],
-    //             allowMultiSelection: true
-    //         });
-    //         console.log(
-    //             'PickImage===>', JSON.stringify(results)
-    //         );
-    //         setImageList([])
+    const imageResize = (res, path, width, height, quality, addressItem, index) => {
+        ImageResizer.createResizedImage(path, width, height, 'PNG', quality, 0, undefined, false,)
+            .then(response => {
+                // response.uri is the URI of the new image that can now be displayed, uploaded...
+                // response.path is the path of the new image
+                // response.name is the name of the new image with the extension
+                // response.size is the size of the new image
+                var maxSize = 3983900;
+                // var maxSize = 1983900;
+                // console.log('imageResize==>', formatBytes(response.size))
+                // console.log('imageResize maxMB ==>', formatBytes(maxSize))
+                if (response.size > maxSize) {
+                    console.log('imageResize need reduce==>', formatBytes(response.size))
+                    imageResize(res, response.uri, width - 100, height - 100, addressItem, 100)
+                } else {
+                    console.log('imageResize no need reduce==>', formatBytes(response.size))
+                    var track = {
+                        fileCopyUri: response.uri,
+                        imageName: res.name,
+                        imageType: res.type,
+                    };
+                    fetchImageList(track, addressItem, index)
+                }
 
-    //         var pickImage = [];
-    //         for (const res of results) {
-    //             var track = {
-    //                 url: res.uri,
-    //                 imageName: res.name,
-    //                 imageType: res.type,
-    //             };
-    //             console.log(
-    //                 'PickImage add===>', res.uri
-    //             );
-    //             pickImage.push(track)
-    //             setImageList(prev => ([...prev, track]))
-    //             // setImage(res.uri)
-    //             // setImageType(res.type)
-    //             // setImageName(res.name)
-    //         }
-    //         // setList(images)
-    //         // console.log(
-    //         //     'PickImage===>', list[0].url
-    //         // );
-    //         // setShowImage(false)
-    //         images = pickImage
-    //         // setImageList(images)
-    //         console.log('Image len==>', images.length)
-    //         console.log(
-    //             'PickImage2===>', images[0].url
-    //         );
-    //     } catch (err) {
-    //         if (DocumentPicker.isCancel(err)) {
-    //             // User cancelled the picker, exit any dialogs or menus and move on
-    //         } else {
-    //             throw err;
-    //         }
-    //     }
-    // }
+                // setTakinPic(true)
+                // setImgUri(response.uri)
+
+            })
+            .catch(err => {
+                console.log('imageResize err==>', JSON.stringify(err))
+                // Oops, something went wrong. Check that the filename is correct and
+                // inspect err to get more details.
+            });
+
+    }
+
+    const pickMultipleFile = async (addressItem, index) => {
+        try {
+            const results = await DocumentPicker.pickMultiple({
+                type: [DocumentPicker.types.images],
+                copyTo: 'documentDirectory',
+                allowMultiSelection: true
+            });
+            console.log(
+                'PickImage===>', JSON.stringify(results)
+            );
+
+
+            var pickImage = [];
+            for (const res of results) {
+                var track = {
+                    fileCopyUri: res.fileCopyUri,
+                    imageName: res.name,
+                    imageType: res.type,
+                };
+                console.log(
+                    'PickImage add===>', res.uri
+                );
+                pickImage.push(track)
+                var maxSize = 3983900;
+                // var maxSize = 1983900;
+                RNFetchBlob.fs.stat(res.fileCopyUri)
+                    .then((stats) => {
+                        // console.log('image size===>', stats.size)
+                        // console.log('max size===>', formatBytes(maxSize))
+                        // console.log('formatBytes size===>', formatBytes(stats.size))
+                        if (stats.size > maxSize) {
+                            console.log('takePicture need reduce==>', formatBytes(stats.size))
+                            imageResize(res, res.fileCopyUri, 1024, 1024, 100, addressItem, index)
+                        } else {
+                            console.log('takePicture no need reduce==>', formatBytes(stats.size))
+                            fetchImageList(track, addressItem, index)
+                        }
+
+                    })
+                // fetchImageList(addressItem, index)
+            }
+
+        } catch (err) {
+            if (DocumentPicker.isCancel(err)) {
+                // User cancelled the picker, exit any dialogs or menus and move on
+            } else {
+                throw err;
+            }
+        }
+    }
 
     const createFolder = async () => {
         var isNetwork = await checkConnected()
@@ -249,12 +290,20 @@ function ParcelListView({ route, navigation }) {
                             "Content-Type": "multipart/form-data"
                         },
                         RNFetchBlob.wrap(decodeURIComponent(path))
-                    );
+                    ).uploadProgress({ interval: 0 }, (written, total) => {
+                        console.log('uploaded size===>', formatBytes(written))
+
+                        var round = Math.round(written / total * 100)
+                        var percentage = round + '%'
+                        setPercantage(percentage)
+                        console.log('uploaded==>', percentage)
+                    });
                     console.log('response.status==>', response.respInfo.status)
                     console.log('response===>', JSON.stringify(response))
                     extractImageIndex = imageList.findIndex(e => e.id === res.id);
                     var uploadStatus = 'pending';
                     if (response.respInfo.status === 201) {
+                        setPercantage('0%')
                         uploadStatus = 'uploaded'
                     } else {
 
@@ -412,7 +461,7 @@ function ParcelListView({ route, navigation }) {
         return (
             <View style={{ flexDirection: 'row', width: dim.width, marginVertical: isTablet ? 8 : 4, paddingHorizontal: isTablet ? 12 : 6, }}>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>{item.address}</Text>
+                    <Text style={GlobalStyle.tableTextValue}>{item.address}</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
                     <TouchableOpacity
@@ -426,10 +475,10 @@ function ParcelListView({ route, navigation }) {
 
                 <View style={{ flex: 1, alignSelf: 'center', }}>
 
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>{item.process}</Text>
+                    <Text style={GlobalStyle.tableTextValue}>{item.process}</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>{item.status == 'NO PHOTOS TAKEN' ? '' : item.status}</Text>
+                    <Text style={GlobalStyle.tableTextValue}>{item.status == 'NO PHOTOS TAKEN' ? '' : item.status}</Text>
                 </View>
             </View>
         )
@@ -449,16 +498,16 @@ function ParcelListView({ route, navigation }) {
         return (
             <View style={{ flexDirection: 'row', height: isTablet ? 48 : 24, }}>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>Address</Text>
+                    <Text style={GlobalStyle.tableText}>Address</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>Detail</Text>
+                    <Text style={GlobalStyle.tableText}>Detail</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>Processed</Text>
+                    <Text style={GlobalStyle.tableText}>Processed</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>uploaded</Text>
+                    <Text style={GlobalStyle.tableText}>uploaded</Text>
                 </View>
             </View>
         )
@@ -467,7 +516,7 @@ function ParcelListView({ route, navigation }) {
 
         return (
 
-            <Text style={{ color: 'white', fontSize: isTablet ? 28 : null }}>Image uploading {fileUploadNumber}/{totalPendingImage} </Text>
+            <Text style={{ color: 'white', fontSize: isTablet ? 28 : null }}> {fileUploadNumber}({percentage})/{totalPendingImage} </Text>
 
         )
     }
@@ -476,9 +525,9 @@ function ParcelListView({ route, navigation }) {
         return (
             <View style={{ flexDirection: 'row', marginTop: 0, justifyContent: orientation === 'PORTRAIT' ? 'space-between' : 'flex-start', paddingHorizontal: isTablet ? 16 : 8 }}>
                 <View>
-                    <Text style={{ paddingHorizontal: isTablet ? 16 : 8, fontSize: isTablet ? 32 : 16 }}>Current</Text>
-                    <Text style={{ paddingHorizontal: isTablet ? 16 : 8, fontSize: isTablet ? 32 : 16 }}>Property List</Text>
-                    <Text style={{ paddingHorizontal: isTablet ? 16 : 8, fontSize: isTablet ? 24 : 12 }}>Select Property To Photograph</Text>
+                    <Text style={{ color: 'grey', paddingHorizontal: isTablet ? 16 : 8, fontSize: isTablet ? 32 : 16 }}>Current</Text>
+                    <Text style={{ color: 'grey', paddingHorizontal: isTablet ? 16 : 8, fontSize: isTablet ? 32 : 16 }}>Property List</Text>
+                    <Text style={{ color: 'grey', paddingHorizontal: isTablet ? 16 : 8, fontSize: isTablet ? 24 : 12 }}>Select Property To Photograph</Text>
                 </View>
                 <View style={{ flexDirection: orientation === 'PORTRAIT' ? 'column' : 'row', alignItems: 'flex-end', }}>
                     <TouchableOpacity
@@ -570,7 +619,7 @@ function ParcelListView({ route, navigation }) {
 
                     <TouchableOpacity
                         style={{ marginTop: orientation === 'PORTRAIT' ? 0 : 16, marginLeft: orientation === 'PORTRAIT' ? 8 : 0, paddingHorizontal: isTablet ? 24 : 6, paddingVertical: isTablet ? 16 : 8, marginRight: isTablet ? 48 : 8, borderRadius: isTablet ? 8 : 4, borderColor: 'green', backgroundColor: 'green', borderWidth: isTablet ? 2 : 1 }}
-                        onPress={() => { fetchImageList(addressItem, index) }} >
+                        onPress={() => { pickMultipleFile(addressItem, index) }} >
                         <Text style={{ color: 'white', alignSelf: 'center', textTransform: 'capitalize', fontSize: isTablet ? 24 : 12 }}>Upload Photo</Text>
 
                     </TouchableOpacity>
@@ -586,11 +635,11 @@ function ParcelListView({ route, navigation }) {
                 {HorizontalGap(16)}
                 {/* <Text>ID: {item.id}</Text> */}
                 <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Address: {addressItem.address}</Text>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Property Class: {addressItem.propertyClass}</Text>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Building Class: {addressItem.buildStyle}</Text>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>SFLA: {addressItem.SFLA}</Text>
-                    <Text style={{ fontSize: isTablet ? 28 : 14 }}>Lat, Long: {addressItem.LAT}, {addressItem.LONG}</Text>
+                    <Text style={GlobalStyle.textStyle}>Address: {addressItem.address}</Text>
+                    <Text style={GlobalStyle.textStyle}>Property Class: {addressItem.propertyClass}</Text>
+                    <Text style={GlobalStyle.textStyle}>Building Class: {addressItem.buildStyle}</Text>
+                    <Text style={GlobalStyle.textStyle}>SFLA: {addressItem.SFLA}</Text>
+                    <Text style={GlobalStyle.textStyle}>Lat, Long: {addressItem.LAT}, {addressItem.LONG}</Text>
                     {VerticalGap(8)}
                     {/* {BuildImageView(imagesByAddress)} */}
                     {orientation === 'PORTRAIT' ? BuildImageView(imagesByAddress) : isTablet ? BuildImageView(imagesByAddress) : null}
@@ -604,8 +653,8 @@ function ParcelListView({ route, navigation }) {
     const BuildImageView = (imagesByAddress) => {
         return (
             <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: isTablet ? 28 : 14 }}>Number Of Images: {imagesByAddress.length}</Text>
-                <Text style={{ fontSize: isTablet ? 28 : 14 }}>Last Image Taken:</Text>
+                <Text style={GlobalStyle.textStyle}>Number Of Images: {imagesByAddress.length}</Text>
+                <Text style={GlobalStyle.textStyle}>Last Image Taken:</Text>
                 {VerticalGap(isTablet ? 12 : 6)}
                 {imagesByAddress.length > 0 ? ImageView(imagesByAddress[imagesByAddress.length - 1].imageUrl, isTablet ? 300 : 150, isTablet ? 400 : 200,) : null}
             </View>

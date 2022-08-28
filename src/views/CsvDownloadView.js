@@ -304,16 +304,16 @@ function CsvDownloadView({ navigation }) {
         return (
             <View style={{ flexDirection: 'row', backgroundColor: 'white', width: screenWidth, marginVertical: isTablet ? 24 : 4, paddingHorizontal: isTablet ? 8 : 4 }}>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>{address}</Text>
+                    <Text style={GlobalStyle.tableTextValue}>{address}</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>{id}</Text>
+                    <Text style={GlobalStyle.tableTextValue}>{id}</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>{propertyClass}</Text>
+                    <Text style={GlobalStyle.tableTextValue}>{propertyClass}</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>{buildStyle}</Text>
+                    <Text style={GlobalStyle.tableTextValue}>{buildStyle}</Text>
                 </View>
 
             </View>
@@ -335,16 +335,16 @@ function CsvDownloadView({ navigation }) {
         return (
             <View style={{ flexDirection: 'row', height: isTablet ? 36 : 24, marginTop: isTablet ? 24 : 8 }}>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 10 }}>Address</Text>
+                    <Text style={GlobalStyle.tableText}>Address</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 10 }}>percel_id</Text>
+                    <Text style={GlobalStyle.tableText}>percel_id</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 10 }}>property_class</Text>
+                    <Text style={GlobalStyle.tableText}>property_class</Text>
                 </View>
                 <View style={{ flex: 1, alignSelf: 'center', }}>
-                    <Text style={{ textTransform: 'uppercase', alignSelf: 'center', fontSize: isTablet ? 24 : 10 }}>build_style</Text>
+                    <Text style={GlobalStyle.tableText}>build_style</Text>
                 </View>
 
             </View>
@@ -364,7 +364,7 @@ function CsvDownloadView({ navigation }) {
             <View style={GlobalStyle.container} >
                 <ScrollView style={{ flexGrow: 1 }} nestedScrollEnabled={true} >
                     <View style={{ alignItems: 'flex-start', }}>
-                        <Text style={{ paddingHorizontal: 8, marginBottom: 8, fontSize: isTablet ? 24 : 16 }}>Parcel Data Present - Downloading New CSV Will Replace Current Data</Text>
+                        <Text style={{ color: 'black', paddingHorizontal: 8, marginBottom: 8, fontSize: isTablet ? 24 : 16 }}>Parcel Data Present - Downloading New CSV Will Replace Current Data</Text>
                         {ItemDivider()}
                         <View style={{ flexDirection: 'row', marginTop: isTablet ? 48 : 32, paddingHorizontal: isTablet ? 16 : 8 }}>
                             <Text style={{ marginRight: 12, color: '#656565', fontWeight: '400', fontSize: isTablet ? 32 : 16 }}>Download CSV</Text>
@@ -380,12 +380,12 @@ function CsvDownloadView({ navigation }) {
                         <TouchableOpacity
                             style={[GlobalStyle.signinStyle, { marginLeft: isTablet ? 24 : 8, marginVertical: isTablet ? 16 : 8, }]}
                             onPress={() => callFileDownload()} >
-                            <Text style={{ fontSize: isTablet ? 32 : 17 }} >{downloading ? 'Downloading...' : 'Download'}</Text>
+                            <Text style={{ color: 'black', fontSize: isTablet ? 32 : 17 }} >{downloading ? 'Downloading...' : 'Download'}</Text>
 
                         </TouchableOpacity>
                         {csvDataList.length > 0 ? BuildTable() : null}
                         {csvDataList.length > 0 ? ItemDivider() : null}
-                        {csvDataList.length > 0 ? ListView() : <Text style={{ alignSelf: 'center', fontSize: isTablet ? 24 : 12 }}>There are no records to display</Text>}
+                        {csvDataList.length > 0 ? ListView() : <Text style={{ alignSelf: 'center', color: 'red', fontSize: isTablet ? 24 : 12 }}>There are no records to display</Text>}
 
                     </View>
 

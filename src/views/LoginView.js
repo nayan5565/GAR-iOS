@@ -68,15 +68,15 @@ function LoginView({ navigation }) {
     return (
         <SafeAreaView style={{ padding: 12 }}>
 
-            <View style={{ alignItems: 'center', marginTop: isTablet ? 48 : 32 }}>
-                <Image resizeMode='contain' style={{ width: isTablet ? screen.width * 0.9 : screen.width * 0.8, alignSelf: 'center' }} source={imagePath.appLogo} />
+            <View style={{ width: '100%', height: '100%', alignItems: 'center', marginTop: isTablet ? 48 : 32 }}>
+                <Image resizeMode='contain' style={{ width: '90%', alignSelf: 'center' }} source={imagePath.appLogo} />
 
                 <Text style={{ color: '#656565', marginTop: isTablet ? 24 : 10, fontSize: isTablet ? 40 : 20, alignSelf: 'center' }}>GAR Photo App</Text>
 
                 <TouchableOpacity
                     style={GlobalStyle.signinStyle}
                     onPress={() => login()} >
-                    {isLogin ? Loader('teal', isTablet ? 48 : 24) : <Text style={{ fontSize: isTablet ? 32 : null }}>Sign In {isLogin}</Text>}
+                    {isLogin ? Loader('teal', isTablet ? 48 : 24) : <Text style={{ color: 'grey', fontSize: isTablet ? 32 : null }}>Sign In {isLogin}</Text>}
 
                 </TouchableOpacity>
 
